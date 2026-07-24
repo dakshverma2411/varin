@@ -1,0 +1,21 @@
+variable:
+  expectedCorrect: true
+  schema:
+    name: nickname
+    description: "User nickname"
+    required: false
+    dateType: STRING
+    value:
+      type: NON_FIXED
+      rule:
+        type: ANY
+      defaultValue:
+        value:
+          - "anonymous"
+
+inputs:
+  - value: [ ]
+    valid: true
+  - value:
+      - "hello"
+    valid: true

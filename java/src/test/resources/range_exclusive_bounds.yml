@@ -1,0 +1,32 @@
+variable:
+  expectedCorrect: true
+  schema:
+    name: score
+    description: "Score value"
+    required: true
+    dateType: INT
+    value:
+      type: NON_FIXED
+      rule:
+        type: RANGE
+        min: "0"
+        minInclusive: false
+        max: "100"
+        maxInclusive: false
+      defaultValue:
+        value:
+          - "50"
+
+inputs:
+  - value:
+      - "0"
+    valid: false
+  - value:
+      - "1"
+    valid: true
+  - value:
+      - "99"
+    valid: true
+  - value:
+      - "100"
+    valid: false

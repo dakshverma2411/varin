@@ -1,0 +1,29 @@
+variable:
+  expectedCorrect: true
+  schema:
+    name: age
+    description: "Age of user"
+    required: true
+    dateType: INT
+    value:
+      type: NON_FIXED
+      rule:
+        type: RANGE
+        min: "18"
+        minInclusive: true
+        max: "60"
+        maxInclusive: true
+      defaultValue:
+        value:
+          - "20"
+
+inputs:
+  - value:
+      - "21"
+    valid: true
+  - value:
+      - "17"
+    valid: false
+  - value: [ ]
+    valid: false
+

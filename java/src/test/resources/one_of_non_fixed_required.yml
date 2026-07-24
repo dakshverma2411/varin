@@ -1,0 +1,37 @@
+variable:
+  expectedCorrect: true
+  schema:
+    name: color
+    description: "Favorite color"
+    required: true
+    dateType: STRING
+    value:
+      type: NON_FIXED
+      rule:
+        type: ONE_OF
+        options:
+          - value: "red"
+            displayValue: "Red"
+            description: "Red color"
+          - value: "green"
+            displayValue: "Green"
+            description: "Green color"
+          - value: "blue"
+            displayValue: "Blue"
+            description: "Blue color"
+      defaultValue:
+        value:
+          - "red"
+
+inputs:
+  - value:
+      - "red"
+    valid: true
+  - value:
+      - "green"
+    valid: true
+  - value:
+      - "yellow"
+    valid: false
+  - value: [ ]
+    valid: false

@@ -1,0 +1,35 @@
+variable:
+  expectedCorrect: true
+  schema:
+    name: priority
+    description: "Priority level"
+    required: true
+    dateType: INT
+    value:
+      type: NON_FIXED
+      rule:
+        type: ONE_OF
+        options:
+          - value: "1"
+            displayValue: "Low"
+            description: "Low priority"
+          - value: "2"
+            displayValue: "Medium"
+            description: "Medium priority"
+          - value: "3"
+            displayValue: "High"
+            description: "High priority"
+      defaultValue:
+        value:
+          - "1"
+
+inputs:
+  - value:
+      - "2"
+    valid: true
+  - value:
+      - "5"
+    valid: false
+  - value:
+      - "abc"
+    valid: false

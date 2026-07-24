@@ -1,0 +1,19 @@
+variable:
+  expectedCorrect: true
+  schema:
+    name: answer
+    description: "The answer"
+    required: true
+    dateType: INT
+    value:
+      type: FIXED
+      value:
+        - "42"
+
+inputs:
+  - value:
+      - "42"
+    valid: true
+  - value:
+      - "abc"
+    valid: false
