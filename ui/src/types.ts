@@ -49,6 +49,7 @@ export type VariableValue = FixedVariableValue | NonFixedVariableValue;
 
 export interface Variable {
   name: string;
+  displayName?: string;
   description?: string;
   required: boolean;
   dataType: DataType;

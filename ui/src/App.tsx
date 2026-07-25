@@ -76,9 +76,19 @@ function App() {
       <div style={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}>
         {sampleVariables.map((v) => (
           <div key={v.name} style={{ border: "1px solid #ccc", padding: "1rem", borderRadius: 8 }}>
-            <label style={{ fontWeight: 600, display: "block", marginBottom: 8 }}>
-              {v.description ?? v.name}
+            <label style={{ fontWeight: 600, display: "block", marginBottom: 8, alignItems: "center", gap: 4 }}>
+              {v.displayName ?? v.name}
               {v.required && <span style={{ color: "red" }}> *</span>}
+              {v.description && (
+                <span
+                  title={v.description}
+                  style={{ cursor: "help", fontSize: "0.85em", opacity: 0.6 }}
+                  role="img"
+                  aria-label={v.description}
+                >
+                  ⓘ
+                </span>
+              )}
             </label>
             <VarinField variable={v} onChange={handleChange(v.name)} />
           </div>

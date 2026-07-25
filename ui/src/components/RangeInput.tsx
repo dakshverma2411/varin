@@ -67,7 +67,7 @@ export function RangeInput({
           max={max}
           step={1}
           value={numericValue}
-          aria-label={variable.description ?? variable.name}
+          aria-label={variable.displayName ?? variable.name}
           onChange={(e) => handleChange(Number(e.target.value))}
         />
         <output>{numericValue}</output>
@@ -119,7 +119,7 @@ export function RangeInput({
         min={min}
         max={max}
         value={numericValue}
-        aria-label={variable.description ?? variable.name}
+        aria-label={variable.displayName ?? variable.name}
         onChange={(e) => handleChange(Number(e.target.value))}
       />
       <button

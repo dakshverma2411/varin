@@ -3,7 +3,7 @@ import type { DataType, Rule, NonFixedVariableValue, Variable, ValidationResult 
 export function validate(rawValue: string, variable: Variable): ValidationResult {
   if (rawValue === "" || rawValue == null) {
     if (variable.required) {
-      return { isValid: false, error: `${variable.name} is required` };
+      return { isValid: false, error: `${variable.displayName ?? variable.name} is required` };
     }
     return { isValid: true };
   }

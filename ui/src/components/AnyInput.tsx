@@ -22,7 +22,7 @@ export function AnyInput({
     className: inputClassName,
     style: inputStyle,
     onChange: (e) => onChange(e.target.value),
-    "aria-label": variable.description ?? variable.name,
+    "aria-label": variable.displayName ?? variable.name,
   };
 
   return (

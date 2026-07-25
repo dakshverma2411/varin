@@ -40,7 +40,7 @@ export function OneOfSelect({
         style={selectStyle}
         value={value}
         required={variable.required}
-        aria-label={variable.description ?? variable.name}
+        aria-label={variable.displayName ?? variable.name}
         onChange={(e) => onChange(e.target.value)}
       >
         {!variable.required && <option value="">— Select —</option>}
