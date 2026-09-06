@@ -80,6 +80,7 @@ jobs:
         working-directory: java
         run: mvn -B -P release deploy
         env:
+          GITHUB_ACTOR: ${{ github.actor }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   ui-release:

@@ -37,6 +37,7 @@ jobs:
         working-directory: java
         run: mvn -B deploy -DskipTests
         env:
+          GITHUB_ACTOR: ${{ github.actor }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   ui-build:
