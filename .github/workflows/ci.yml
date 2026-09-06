@@ -35,7 +35,7 @@ jobs:
 
       - name: Publish snapshot to GitHub Packages
         working-directory: java
-        run: mvn -B deploy -DskipTests
+        run: mvn -B -s "${{ github.workspace }}/settings.xml" deploy -DskipTests
         env:
           GITHUB_ACTOR: ${{ github.actor }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

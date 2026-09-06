@@ -31,7 +31,7 @@ jobs:
 
       - name: Build, test and deploy snapshot
         working-directory: java
-        run: mvn -B deploy
+        run: mvn -B -s "${{ github.workspace }}/settings.xml" deploy
         env:
           GITHUB_ACTOR: ${{ github.actor }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

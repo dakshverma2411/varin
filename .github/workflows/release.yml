@@ -78,7 +78,7 @@ jobs:
 
       - name: Build, test and deploy release
         working-directory: java
-        run: mvn -B -P release deploy
+        run: mvn -B -s "${{ github.workspace }}/settings.xml" -P release deploy
         env:
           GITHUB_ACTOR: ${{ github.actor }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
