@@ -1,0 +1,180 @@
+name: Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Release version (semver, e.g. 1.0.0). Published artifacts are immutable."
+        required: true
+        type: string
+
+permissions:
+  contents: write
+  packages: write
+  pull-requests: write
+
+jobs:
+  guard:
+    name: guard
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.check.outputs.version }}
+      next_version: ${{ steps.check.outputs.next_version }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Validate release request
+        id: check
+        run: |
+          set -e
+
+          VERSION="${{ github.event.inputs.version }}"
+
+          # Releases only run from develop
+          if [ "${{ github.ref_name }}" != "develop" ]; then
+            echo "::error::Releases must run from the develop branch (current: ${{ github.ref_name }})."
+            exit 1
+          fi
+
+          # Strict semver X.Y.Z
+          if ! [[ "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "::error::Version '$VERSION' is not valid semver (expected X.Y.Z)."
+            exit 1
+          fi
+
+          # Tag must not already exist -> immutability guard
+          git fetch --tags origin
+          if git rev-parse -q --verify "refs/tags/v$VERSION" > /dev/null; then
+            echo "::error::Tag v$VERSION already exists. Release versions are immutable."
+            exit 1
+          fi
+
+          NEXT_VERSION="${VERSION%.*}.$(( ${VERSION##*.} + 1 ))"
+
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "next_version=$NEXT_VERSION" >> "$GITHUB_OUTPUT"
+
+  java-release:
+    name: java-release
+    needs: guard
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+          cache: maven
+          server-id: github
+          settings-path: ${{ github.workspace }}
+
+      - name: Set release version
+        working-directory: java
+        run: mvn -B versions:set -DnewVersion=${{ needs.guard.outputs.version }} -DgenerateBackupPoms=false
+
+      - name: Build, test and deploy release
+        working-directory: java
+        run: mvn -B -P release deploy
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  ui-release:
+    name: ui-release
+    needs: guard
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: ui/package-lock.json
+          registry-url: https://npm.pkg.github.com
+          scope: "@dakshverma2411"
+
+      - name: Install dependencies
+        working-directory: ui
+        run: npm ci
+
+      - name: Lint
+        working-directory: ui
+        run: npm run lint
+
+      - name: Set release version
+        working-directory: ui
+        run: npm version --no-git-tag-version "${{ needs.guard.outputs.version }}"
+
+      - name: Build
+        working-directory: ui
+        run: npm run build
+
+      - name: Publish release to GitHub Packages
+        working-directory: ui
+        run: npm publish --tag latest
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  finalize:
+    name: finalize
+    needs: [guard, java-release, ui-release]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: develop
+
+      - name: Tag release
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git tag -a "v${{ needs.guard.outputs.version }}" -m "Release v${{ needs.guard.outputs.version }}"
+          git push origin "v${{ needs.guard.outputs.version }}"
+
+      - name: Create GitHub Release
+        run: gh release create "v${{ needs.guard.outputs.version }}" --title "v${{ needs.guard.outputs.version }}" --generate-notes
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Create version-bump branch
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git checkout -b "chore/release-${{ needs.guard.outputs.version }}-bump"
+
+      - name: Bump develop to next versions
+        working-directory: java
+        run: mvn -B versions:set -DnewVersion=${{ needs.guard.outputs.next_version }}-SNAPSHOT -DgenerateBackupPoms=false
+
+      - name: Set next UI version
+        working-directory: ui
+        run: npm version --no-git-tag-version "${{ needs.guard.outputs.next_version }}"
+
+      - name: Commit version bumps
+        run: |
+          git add java/pom.xml ui/package.json ui/package-lock.json
+          git commit -m "chore: bump develop to ${{ needs.guard.outputs.next_version }} after v${{ needs.guard.outputs.version }} release"
+          git push origin "chore/release-${{ needs.guard.outputs.version }}-bump"
+
+      - name: Open and merge version-bump PR
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh pr create \
+            --base develop \
+            --title "chore: bump develop to ${{ needs.guard.outputs.next_version }} after v${{ needs.guard.outputs.version }}" \
+            --body "Automated post-release version bump for v${{ needs.guard.outputs.version }}."
+          gh pr merge --squash --admin --delete-branch "chore/release-${{ needs.guard.outputs.version }}-bump"
