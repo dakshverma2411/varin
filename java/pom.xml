@@ -4,9 +4,48 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>com.dakshverma.varin</groupId>
+    <groupId>io.github.dakshverma2411</groupId>
     <artifactId>varin</artifactId>
     <version>1.0-SNAPSHOT</version>
+
+    <name>Varin</name>
+    <description>A variable configuration and validation library. Define typed variables with rules and validate inputs against them.</description>
+    <url>https://github.com/dakshverma2411/varin</url>
+
+    <licenses>
+        <license>
+            <name>MIT License</name>
+            <url>https://opensource.org/licenses/MIT</url>
+        </license>
+    </licenses>
+
+    <developers>
+        <developer>
+            <id>dakshverma2411</id>
+            <name>Daksh Verma</name>
+            <url>https://github.com/dakshverma2411</url>
+        </developer>
+    </developers>
+
+    <scm>
+        <connection>scm:git:git://github.com/dakshverma2411/varin.git</connection>
+        <developerConnection>scm:git:ssh://git@github.com:dakshverma2411/varin.git</developerConnection>
+        <url>https://github.com/dakshverma2411/varin</url>
+        <tag>HEAD</tag>
+    </scm>
+
+    <distributionManagement>
+        <repository>
+            <id>github</id>
+            <name>GitHub Packages</name>
+            <url>https://maven.pkg.github.com/dakshverma2411/varin</url>
+        </repository>
+        <snapshotRepository>
+            <id>github</id>
+            <name>GitHub Packages</name>
+            <url>https://maven.pkg.github.com/dakshverma2411/varin</url>
+        </snapshotRepository>
+    </distributionManagement>
 
     <properties>
         <maven.compiler.source>17</maven.compiler.source>
@@ -115,5 +154,42 @@
             </plugin>
         </plugins>
     </build>
+
+    <profiles>
+        <!-- Activated during release builds: attaches sources and javadoc jars -->
+        <profile>
+            <id>release</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-source-plugin</artifactId>
+                        <version>3.3.1</version>
+                        <executions>
+                            <execution>
+                                <id>attach-sources</id>
+                                <goals>
+                                    <goal>jar-no-fork</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-javadoc-plugin</artifactId>
+                        <version>3.11.2</version>
+                        <executions>
+                            <execution>
+                                <id>attach-javadocs</id>
+                                <goals>
+                                    <goal>jar</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 
 </project>
