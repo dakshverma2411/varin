@@ -24,6 +24,62 @@ cd java
 mvn clean install
 ```
 
+### Install from GitHub Packages
+
+Published as `io.github.dakshverma2411:varin` on GitHub Packages (releases are immutable; `*-SNAPSHOT` versions track `develop` and are overwritten).
+
+> GitHub Packages requires authentication even for public packages — use a PAT with the `read:packages` scope.
+
+```xml
+<!-- pom.xml -->
+<dependency>
+    <groupId>io.github.dakshverma2411</groupId>
+    <artifactId>varin</artifactId>
+    <version>1.0.0</version>
+</dependency>
+```
+
+```xml
+<!-- ~/.m2/settings.xml -->
+<settings>
+  <servers>
+    <server>
+      <id>github</id>
+      <username>YOUR_GITHUB_USERNAME</username>
+      <password>YOUR_PAT</password>
+    </server>
+  </servers>
+</settings>
+```
+
+```xml
+<!-- pom.xml -->
+<repositories>
+  <repository>
+    <id>github</id>
+    <url>https://maven.pkg.github.com/dakshverma2411/varin</url>
+    <snapshots><enabled>true</enabled></snapshots>
+  </repository>
+</repositories>
+```
+
+Gradle (Kotlin DSL):
+
+```kotlin
+repositories {
+    maven {
+        url = uri("https://maven.pkg.github.com/dakshverma2411/varin")
+        credentials {
+            username = providers.gradleProperty("gpr.user").get()
+            password = providers.gradleProperty("gpr.key").get()
+        }
+    }
+}
+dependencies {
+    implementation("io.github.dakshverma2411:varin:1.0.0")
+}
+```
+
 ### Core Concepts
 
 **Variable** — a named, typed configuration parameter:
@@ -120,35 +176,27 @@ cd ui
 npm run dev
 ```
 
+### Install from GitHub Packages
+
+Published as `@dakshverma2411/ui` on GitHub Packages. Releases are on the `latest` tag; `develop` snapshots on the `snapshot` tag; per-PR builds on `pr-<N>` tags.
+
+> GitHub Packages requires authentication even for public packages — use a PAT with the `read:packages` scope.
+
+```ini
+# .npmrc (project root)
+@dakshverma2411:registry=https://npm.pkg.github.com
+//npm.pkg.github.com/:_authToken=YOUR_PAT
+```
+
+```bash
+npm install @dakshverma2411/ui           # latest release
+npm install @dakshverma2411/ui@snapshot  # latest develop snapshot
+```
+
 ### Usage
 
 ```tsx
-import { VarinField } from "@varin/ui";
-
-const variable = {
-  name: "environment",
-  description: "Deployment Environment",
-  required: true,
-  dataType: "STRING",
-  value: {
-    type: "NON_FIXED",
-    rule: {
-      type: "ONE_OF",
-      options: [
-        { value: "dev", displayValue: "Development" },
-        { value: "prod", displayValue: "Production" },
-      ],
-    },
-    defaultValue: { value: ["dev"] },
-  },
-};
-
-<VarinField
-  variable={variable}
-  onChange={({ value, validation }) => {
-    console.log(value, validation.isValid, validation.error);
-  }}
-/>
+import { VarinField } from "@dakshverma2411/ui";
 ```
 
 ### Component Mapping
@@ -180,6 +228,30 @@ All components are headless. Customize via:
   anyInputProps={{ inputClassName: "my-input-class" }}
 />
 ```
+
+## Development
+
+### Branching
+
+- `develop` is the default and only long-lived branch — all work lands here via PR.
+- Merging requires the `java-build` and `ui-build` checks to pass; only the repository owner can merge.
+- Direct pushes and force pushes to `develop` are blocked.
+
+### CI/CD
+
+| Workflow | Trigger | What it does |
+|---|---|---|
+| `CI` | PR → `develop` | Builds and tests both modules; publishes snapshots: Maven `-SNAPSHOT` (overwritable) and npm `0.0.0-pr<N>.<sha>` (dist-tag `pr<N>`) |
+| `Snapshot` | push → `develop` | Publishes Maven `-SNAPSHOT` (overwritten each push) and npm `<version>-snapshot.<sha>` (dist-tag `snapshot`) |
+| `Release` | manual (Actions → Release → Run workflow) | Publishes immutable releases from `develop`, tags `vX.Y.Z`, creates a GitHub Release, bumps `develop` to the next patch version via an auto-merged PR |
+
+### Cutting a release
+
+1. Go to **Actions → Release → Run workflow** on `develop`.
+2. Enter the version (`X.Y.Z`, e.g. `1.0.0`) and run.
+3. The workflow validates the input, publishes `io.github.dakshverma2411:varin:X.Y.Z` (with sources/javadoc) and `@dakshverma2411/ui@X.Y.Z`, tags `vX.Y.Z`, creates a GitHub Release, and bumps `develop` to `X.Y.(Z+1)`.
+
+Release versions are immutable — re-running with an existing version fails by design (the tag exists and GitHub Packages rejects duplicates). Snapshots may be overwritten.
 
 ## License
 
